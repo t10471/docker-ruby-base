@@ -48,7 +48,7 @@ RUN wget -qO - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc \
 RUN curl -O http://ftp.ruby-lang.org/pub/ruby/2.1/ruby-2.1.4.tar.gz && \
     tar -zxvf ruby-2.1.4.tar.gz && \
     cd ruby-2.1.4 && \
-    ./configure --disable-install-doc && \
+    ./configure --disable-install-doc --enable-shared && \
     make
 WORKDIR /root/ruby-2.1.4 
 RUN checkinstall \
@@ -78,6 +78,26 @@ RUN cd /tmp && \
 RUN apt-get clean -qq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+WORKDIR /root/tmp/vim
+RUN ./configure --with-features=huge \
+            --disable-darwin \
+            --disable-selinux \
+            --enable-luainterp \
+            --enable-pythoninterp \
+            --enable-python3interp \
+            --enable-rubyinterp \
+            --enable-multibyte \
+            --enable-xim \
+            --enable-fontset\
+            --enable-gui=no
+RUN make
+RUN checkinstall \
+            --type=debian \
+            --install=yes \
+            --pkgname="vim" \
+            --maintainer="ubuntu-devel-discuss@lists.ubuntu.com" \
+            --nodoc \
+            --default
 WORKDIR /root 
 
 ADD init.sh /root/
