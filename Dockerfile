@@ -78,6 +78,7 @@ RUN cd /tmp && \
 RUN apt-get clean -qq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN ln -s  /usr/local/bin/ruby /usr/bin/ruby
 WORKDIR /root/tmp/vim
 RUN ./configure --with-features=huge \
             --disable-darwin \
