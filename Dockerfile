@@ -19,7 +19,6 @@ RUN apt-get update\
       libxml2-dev \
       libxslt-dev \
       libyaml-dev \
-      postgresql-client-9.3 \
       software-properties-common \
       zlib1g-dev
 
@@ -33,24 +32,13 @@ RUN apt-get remove ${OPTS_APT}\
 
 WORKDIR /root
 
-# set $PATH so that non-login shells will see the Ruby binaries
-# ENV PATH $PATH:/opt/rubies/ruby-2.1.4/bin
-
-# Add PostgreSQL Global Development Group apt source
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" \
-    > /etc/apt/sources.list.d/pgdg.list
-
-# Add PGDG repository key
-RUN wget -qO - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc \
-    | apt-key add -
-
-# Install MRI Ruby 2.1.4
-RUN curl -O http://ftp.ruby-lang.org/pub/ruby/2.1/ruby-2.1.4.tar.gz && \
-    tar -zxvf ruby-2.1.4.tar.gz && \
-    cd ruby-2.1.4 && \
+ENV RUBY_VERSION 2.2.2
+RUN curl -O http://cache.ruby-lang.org/pub/ruby/2.2/ruby-${RUBY_VERSION}.tar.gz && \
+    tar -zxvf ruby-${RUBY_VERSION}.tar.gz && \
+    cd ruby-${RUBY_VERSION} && \
     ./configure --disable-install-doc --enable-shared && \
     make
-WORKDIR /root/ruby-2.1.4 
+WORKDIR /root/ruby-${RUBY_VERSION} 
 RUN checkinstall \
             --type=debian \
             --install=yes \
@@ -59,17 +47,18 @@ RUN checkinstall \
             --nodoc \
             --default
 WORKDIR /root 
-RUN rm -r ruby-2.1.4 ruby-2.1.4.tar.gz && \
+RUN rm -r ruby-${RUBY_VERSION} ruby-${RUBY_VERSION}.tar.gz && \
     echo 'gem: --no-document' > /usr/local/etc/gemrc
 # ==============================================================================
 # Rubygems, Bundler and Foreman
 # ==============================================================================
 
 # Install rubygems and bundler
-ADD http://production.cf.rubygems.org/rubygems/rubygems-2.4.2.tgz /tmp/
+ENV GEM_VERSION 2.4.7
+ADD http://production.cf.rubygems.org/rubygems/rubygems-${GEM_VERSION}.tgz /tmp/
 RUN cd /tmp && \
-    tar -zxf /tmp/rubygems-2.4.2.tgz && \
-    cd /tmp/rubygems-2.4.2 && \
+    tar -zxf /tmp/rubygems-${GEM_VERSION}.tgz && \
+    cd /tmp/rubygems-${GEM_VERSION} && \
     ruby setup.rb && \
     /bin/bash -l -c 'gem install bundler --no-rdoc --no-ri' && \
     echo "gem: --no-ri --no-rdoc" > ~/.gemrc
